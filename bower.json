@@ -20,5 +20,8 @@
     "purescript-foreign": "^3.2.0",
     "purescript-nullable": "^2.0.0",
     "purescript-express": "^0.4.2"
+  },
+  "devDependencies": {
+    "purescript-console": "^2.0.0"
   }
 }
