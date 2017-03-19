@@ -7,6 +7,9 @@ module Node.Express.Passport.Strategy.Local
 
   , Username
   , Password
+
+  , passportStrategyLocal
+  , passportStrategyLocal'
   )
   where
 
