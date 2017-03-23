@@ -40,6 +40,7 @@ module Node.Express.Passport
   where
 
 import Prelude
+import Control.Monad.Aff (Aff, runAff)
 import Control.Monad.Eff (Eff)
 import Control.Monad.Eff.Class (liftEff)
 import Control.Monad.Eff.Exception (Error)
@@ -135,11 +136,10 @@ foreign import _addSerializeUser  :: forall user eff.
                                     (Eff (passport :: PASSPORT user | eff) Unit)
 
 type SerializeUser user eff=
-  Request -> user -> Eff eff SerializedUser
+  Request -> user -> Aff eff SerializedUser
 
 data SerializedUser
   = SerializedUser (Maybe Json)
-  | SerializeError Error
   | SerializePass
 
 addSerializeUser  :: forall user eff.
@@ -150,15 +150,16 @@ addSerializeUser passport serialize = do
   let
     curryOnSerialized onSerialized error result =
       runFn2 onSerialized (toNullable error) (toNullable result)
-    serialize' req user onSerialized = do
-      serialized <- serialize req user
-      case serialized of
-        SerializedUser result ->
-          (curryOnSerialized onSerialized) Nothing result
-        SerializeError error ->
-          (curryOnSerialized onSerialized) (Just error) Nothing
-        SerializePass ->
-          (curryOnSerialized onSerialized) (Just $ unsafeCoerce "pass") Nothing
+    serialize' req user onSerialized =
+      void $ runAff onError onSuccess $ serialize req user
+      where
+      onError :: Error -> Eff eff Unit
+      onError error = (curryOnSerialized onSerialized) (Just error) Nothing
+      onSuccess :: SerializedUser -> Eff eff Unit
+      onSuccess (SerializedUser result) =
+        (curryOnSerialized onSerialized) Nothing result
+      onSuccess SerializePass =
+        (curryOnSerialized onSerialized) (Just $ unsafeCoerce "pass") Nothing
     serialize'' = mkFn3 serialize'
   runFn2 _addSerializeUser passport serialize''
 
@@ -175,11 +176,10 @@ foreign import _addDeserializeUser  :: forall user eff.
                                       (Eff (passport :: PASSPORT user | eff) Unit)
 
 type DeserializeUser user eff =
-  Request -> Json -> Eff eff (DeserializedUser user)
+  Request -> Json -> Aff eff (DeserializedUser user)
 
 data DeserializedUser user
   = DeserializedUser (Maybe user)
-  | DeserializeError Error
   | DeserializePass
 
 addDeserializeUser  :: forall user eff.
@@ -190,15 +190,17 @@ addDeserializeUser passport deserialize = do
   let
     onDeserialized' onDeserialized error user =
       runFn2 onDeserialized (toNullable error) (toNullable user)
-    deserialize' req serialized onDeserialized = do
-      deserialized <- deserialize req serialized
-      case deserialized of
-        DeserializedUser user ->
-          (onDeserialized' onDeserialized) Nothing user
-        DeserializeError error ->
-          (onDeserialized' onDeserialized) (Just error) Nothing
-        DeserializePass ->
-          (onDeserialized' onDeserialized) (Just $ unsafeCoerce "pass") Nothing
+    deserialize' req serialized onDeserialized =
+      void $ runAff onError onSuccess $ deserialize req serialized
+      where
+      onError :: Error -> Eff eff Unit
+      onError error =
+        (onDeserialized' onDeserialized) (Just error) Nothing
+      onSuccess :: DeserializedUser user -> Eff eff Unit
+      onSuccess (DeserializedUser user) =
+        (onDeserialized' onDeserialized) Nothing user
+      onSuccess DeserializePass =
+        (onDeserialized' onDeserialized) (Just $ unsafeCoerce "pass") Nothing
     deserialize'' = mkFn3 deserialize'
   runFn2 _addDeserializeUser passport deserialize''
 
