@@ -10,7 +10,7 @@ import Data.Function.Uncurried (Fn3, runFn3)
 import Node.Express.Passport.Common (PASSPORT, Passport)
 
 
-foreign import data PassportStrategy :: *
+foreign import data PassportStrategy :: Type
 
 foreign import _setStrategy :: forall user eff.
                             Fn3

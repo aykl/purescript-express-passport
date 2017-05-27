@@ -4,9 +4,11 @@ module Node.Express.Passport.Common
   )
   where
 
+import Control.Monad.Eff (kind Effect)
+
 
 -- | Passport effect for specific user type
-foreign import data PASSPORT :: * -> !
+foreign import data PASSPORT :: Type -> Effect
 
 -- | Passport singleton instance
-foreign import data Passport :: *
+foreign import data Passport :: Type

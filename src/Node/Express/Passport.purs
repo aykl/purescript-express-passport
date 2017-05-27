@@ -45,9 +45,7 @@ import Control.Monad.Eff (Eff)
 import Control.Monad.Eff.Class (liftEff)
 import Control.Monad.Eff.Exception (Error)
 import Data.Argonaut (Json)
-import Data.Foreign (Foreign)
-import Data.Foreign.Class (write)
-import Data.Foreign.Null (writeNull)
+import Data.Foreign (Foreign, toForeign)
 import Data.Function.Uncurried (Fn1, Fn2, Fn3, Fn4, mkFn3, mkFn4, runFn1, runFn2, runFn3, runFn4)
 import Data.Maybe (Maybe(..))
 import Data.Nullable (Nullable, toMaybe, toNullable)
@@ -266,9 +264,9 @@ authenticate  :: forall info user eff.
               -> Handler (passport :: PASSPORT user | eff)
 authenticate passport strategy options onAuthenticate = HandlerM \req res nxt -> do
   let
-    foreignMessage (AuthenticationMessage msg) = write msg
-    foreignMessage StrategyAuthenticationMessage = write true
-    foreignMessage NoAuthenticationMessage = writeNull
+    foreignMessage (AuthenticationMessage msg) = toForeign msg
+    foreignMessage StrategyAuthenticationMessage = toForeign true
+    foreignMessage NoAuthenticationMessage = toForeign $ toNullable Nothing
     optionsImpl =
       { session:          options.session
       , successRedirect:  toNullable options.successRedirect

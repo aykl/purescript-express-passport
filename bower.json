@@ -14,14 +14,15 @@
     "bower.json"
   ],
   "dependencies": {
-    "purescript-prelude": "^2.5.0",
-    "purescript-exceptions": "^2.0.0",
-    "purescript-argonaut": "^2.0.0",
-    "purescript-foreign": "^3.2.0",
-    "purescript-nullable": "^2.0.0",
-    "purescript-express": "^0.4.2"
+    "purescript-prelude": "^3.0.0",
+    "purescript-exceptions": "^3.0.0",
+    "purescript-argonaut": "^3.0.0",
+    "purescript-foreign": "^4.0.0",
+    "purescript-nullable": "^3.0.0",
+    "purescript-express": "^0.5.0"
   },
   "devDependencies": {
-    "purescript-console": "^2.0.0"
+    "purescript-console": "^3.0.0",
+    "purescript-test-unit": "^11.0.0"
   }
 }
