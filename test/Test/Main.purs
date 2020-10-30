@@ -47,6 +47,6 @@ initPassport = do
   setStrategy passport "local" $ passportStrategyLocal defaultPassportStrategyLocalOptions $ verify
   addDeserializeUser passport passportDeserializeString
   addSerializeUser passport passportSerializeString
-  -- This line should cause type error when uncommented
+  -- TODO: This line should cause type error when uncommented
   -- addSerializeUser passport passportSerializeNumber
   pure passport
