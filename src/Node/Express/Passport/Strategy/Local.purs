@@ -1,72 +1,88 @@
-module Node.Express.Passport.Strategy.Local
-  ( PassportStrategyLocalOptions
-  , passportStrategyLocalOptions
+module Node.Express.Passport.Strategy.Local where
 
-  , CredentialsVerified
-  , PassportVerify
-
-  , Username
-  , Password
-
-  , passportStrategyLocal
-  , passportStrategyLocal'
-  )
-  where
-
+import Data.Function.Uncurried
+import Effect
+import Effect.Uncurried
+import Node.Express.Passport.Strategy.Common
 import Prelude
-import Control.Monad.Eff (Eff)
-import Control.Monad.Eff.Exception (Error)
-import Data.Function.Uncurried (Fn3, Fn4, runFn3, mkFn4)
-import Data.Maybe (Maybe)
-import Data.Nullable (Nullable, toNullable)
-import Node.Express.Passport.Strategy.Common (PassportStrategy)
+
+import Data.Maybe (Maybe(..))
+import Data.Newtype (class Newtype)
+import Data.Nullable (Nullable)
+import Data.Nullable as Nullable
+import Effect.Exception (Error)
 import Node.Express.Types (Request)
 
+type PassportStrategyLocalOptions
+  = { usernameField :: String
+    , passwordField :: String
+    }
 
-type PassportStrategyLocalOptions =
-  { usernameField :: String
-  , passwordField :: String
-  }
+defaultPassportStrategyLocalOptions :: PassportStrategyLocalOptions
+defaultPassportStrategyLocalOptions = { usernameField: "username", passwordField: "password" }
 
-passportStrategyLocalOptions :: PassportStrategyLocalOptions
-passportStrategyLocalOptions =
-  { usernameField: "username", passwordField: "password" }
+newtype Username
+  = Username String
 
+derive instance newtypeUsername :: Newtype Username _
 
-type Username = String
-type Password = String
+newtype Password
+  = Password String
 
+derive instance newtypePassword :: Newtype Password _
 
-type CredentialsVerifiedImpl user info eff =
-  Fn3 (Nullable Error) (Nullable user) (Nullable info) (Eff eff Unit)
-type PassportVerifyImpl user info eff =
-  Fn4 Request Username Password (CredentialsVerifiedImpl user info eff) (Eff eff Unit)
+type PassportStrategyLocal__Implementation__CredentialsVerified user info
+  = EffectFn3 (Nullable Error) (Nullable user) (Nullable info) Unit
 
-type CredentialsVerified user info eff =
-  Maybe Error -> Maybe user -> Maybe info -> Eff eff Unit
-type PassportVerify user info eff =
-  Request -> Username -> Password -> CredentialsVerified user info eff
-  -> Eff eff Unit
+type PassportStrategyLocal__Implementation__Verify user info
+  = EffectFn4 Request Username Password (PassportStrategyLocal__Implementation__CredentialsVerified user info) Unit
 
-foreign import _passportStrategyLocal :: forall user info eff. PassportStrategyLocalOptions
-                                      -> PassportVerifyImpl user info eff
-                                      -> PassportStrategy
+data PassportStrategyLocal__CredentialsVerifiedResult user
+  = PassportStrategyLocal__CredentialsVerifiedResult__Error Error
+  | PassportStrategyLocal__CredentialsVerifiedResult__AuthenticationError
+  | PassportStrategyLocal__CredentialsVerifiedResult__Success user
 
-passportStrategyLocal :: forall user info eff.
-                      PassportStrategyLocalOptions
-                      -> PassportVerify user info eff
-                      -> PassportStrategy
+type PassportStrategyLocal__CredentialsVerified user info
+  = { result :: PassportStrategyLocal__CredentialsVerifiedResult user
+    , info :: Maybe info
+    }
+    -> Effect Unit
+
+type PassportStrategyLocal__Verify user info
+  = Request -> Username -> Password -> PassportStrategyLocal__CredentialsVerified user info -> Effect Unit
+
+foreign import _passportStrategyLocal ::
+  forall user info.
+  Fn2
+  PassportStrategyLocalOptions
+  (PassportStrategyLocal__Implementation__Verify user info)
+  PassportStrategy
+
+passportStrategyLocal ::
+  forall user info.
+  PassportStrategyLocalOptions ->
+  PassportStrategyLocal__Verify user info ->
+  PassportStrategy
 passportStrategyLocal options verify =
-  let
-    curryVerified verified error user info =
-      runFn3 verified (toNullable error) (toNullable user) (toNullable info)
-    verify' req username password verified =
-      verify req username password (curryVerified verified)
-    verify'' = mkFn4 verify'
-  in
-  _passportStrategyLocal options verify''
-
-passportStrategyLocal'  :: forall user info eff.
-                        PassportVerify user info eff
-                        -> PassportStrategy
-passportStrategyLocal' = passportStrategyLocal passportStrategyLocalOptions
+  runFn2
+  _passportStrategyLocal
+  options
+  (mkEffectFn4 \req username password verified ->
+    verify
+    req
+    username
+    password
+    (\{ result, info } ->
+      runEffectFn3
+      verified
+      ( case result of
+             PassportStrategyLocal__CredentialsVerifiedResult__Error error -> Nullable.notNull error
+             _ -> Nullable.null
+      )
+      ( case result of
+             PassportStrategyLocal__CredentialsVerifiedResult__Success user -> Nullable.notNull user
+             _ -> Nullable.null
+      )
+      (Nullable.toNullable info)
+    )
+  )

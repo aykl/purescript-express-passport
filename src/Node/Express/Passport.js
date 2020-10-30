@@ -1,98 +1,70 @@
-
-var passport = require('passport');
+const passport = require('passport')
 
 exports._getPassport = function() {
-  return require('passport');
-};
+  return require('passport')
+}
 
 exports._passportInitialize = function(passport, options) {
-  return function() {
-    return passport.initialize(options);
-  }
-};
+  return passport.initialize(options)
+}
 
 exports._passportSession = function(passport, options) {
-  return function() {
-    return passport.session(options);
-  }
-};
+  return passport.session(options)
+}
 
 exports._addSerializeUser = function(passport, serializer) {
-  return function() {
-    passport.serializeUser(function(req, user, cb) {
-      serializer(req, user, function(e, o) {
-        return function() {
-          return cb(e, o);
-        }
-      })();
-    });
-  }
-};
+  passport.serializeUser(serializer)
+}
 
 exports._addDeserializeUser = function(passport, deserializer) {
-  return function() {
-    passport.deserializeUser(function(req, obj, cb) {
-      deserializer(req, obj, function(e, u) {
-        return function() {
-          return cb(e, u);
-        }
-      })();
-    });
-  }
-};
+  passport.deserializeUser(deserializer)
+}
 
 exports._authenticate = function(passport, strategy, options, callback) {
-  return function(req, res, next) {
-    return function() {
-      var onAuthenticate = null;
-      if (callback) {
-        onAuthenticate = function(err, user, info, status) {
-          if (user === false || user === undefined) user = null;
-          if (info === false || info === undefined) info = null;
-          if (status === false || status === undefined) status = null;
-          callback(err, user, info, status)();
-        }
-      }
-      passport.authenticate(strategy, options, onAuthenticate)(req, res, next);
-    }
-  }
-};
+  return
+    passport.authenticate(
+      strategy,
+      options,
+      (
+        callback ?
+        (
+          function _authenticateCallback(err, user, info, status) {
+            callback(
+              err,
+              user ? user : null, // can be false
+              info ? info : null, // can be false
+              status ? status : null // can be false
+            )
+          }
+        ) : null
+      )
+    )
+}
 
 exports._isAuthenticated = function(req) {
-  return function() {
-    return req.isAuthenticated();
-  }
-};
+  return req.isAuthenticated()
+}
 
 exports._logIn = function(req, user, options, done) {
-  return function() {
-    var onLogin = null;
-    if (done) {
-      onLogin = function(err) {
-        done(err)();
-      }
-    }
-    req.logIn(user, options, onLogin);
-  }
-};
+  req.logIn(user, options, done)
+}
 
 exports._logOut = function(req) {
-  return function() {
-    req.logOut();
-  }
-};
+  req.logOut()
+}
 
 exports._getUser = function(req) {
-  return function() {
-    var property = 'user';
-    if (req._passport && req._passport.instance) {
-      property = req._passport.instance._userProperty || 'user';
-    }
-    var user = req[property];
-
-    if (user === false || user === null) {
-      return null;
-    }
-    return user;
+  if (!(req._passport && req._passport.instance)) {
+    throw new Error('passport is not initialized?')
   }
-};
+
+  const property = req._passport.instance._userProperty
+
+  if (!property) {
+    throw new Error('wtf, empty _userProperty')
+  }
+
+  const user = req[property]
+
+  return user ? user : null // can be false
+}

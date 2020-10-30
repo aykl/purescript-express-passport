@@ -1,4 +1,6 @@
-.psc-ide-port
-bower_components
-node_modules
-output
+/.psc-ide-port
+/bower_components
+/node_modules
+/output
+/.spago
+/.purs-repl
