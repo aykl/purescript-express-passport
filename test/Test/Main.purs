@@ -12,7 +12,7 @@ import Effect.Aff (Aff)
 import Effect.Console (log)
 import Node.Express.Passport (AddDeserializeUser__Callback, AddSerializeUser__Callback, DeserializedUser(..), Passport, SerializedUser(..), getPassport, setStrategy, PassportStrategy)
 import Node.Express.Passport as Passport
-import Node.Express.Passport.Strategy.Local (PassportStrategyLocal__CredentialsVerified, PassportStrategyLocal__CredentialsVerifiedResult(..), Password, Username(..), defaultPassportStrategyLocalOptions)
+import Node.Express.Passport.Strategy.Local (PassportStrategyLocal__CredentialsVerifiedResult(..), Password, Username(..), defaultPassportStrategyLocalOptions)
 import Node.Express.Passport.Strategy.Local as Passport.Local
 import Node.Express.Types (Request)
 import Type.Prelude (Proxy(..))
@@ -33,12 +33,10 @@ passportMethods ::
     ( Request ->
       Username ->
       Password ->
-      ( { info :: Maybe Void
+      Aff
+        { info :: Maybe Void
         , result :: PassportStrategyLocal__CredentialsVerifiedResult String
-        } ->
-        Effect Unit
-      ) ->
-      Effect Unit
+        }
     ) ->
     PassportStrategy
   }
@@ -74,9 +72,11 @@ verify ::
   Request ->
   Username ->
   Password ->
-  PassportStrategyLocal__CredentialsVerified String info ->
-  Effect Unit
-verify req (Username username) password verified = verified { result: PassportStrategyLocal__CredentialsVerifiedResult__Success username, info: Nothing }
+  Aff
+    { result :: PassportStrategyLocal__CredentialsVerifiedResult String
+    , info :: Maybe info
+    }
+verify req (Username username) password = pure { result: PassportStrategyLocal__CredentialsVerifiedResult__Success username, info: Nothing }
 
 initPassport :: Effect Passport
 initPassport = do
