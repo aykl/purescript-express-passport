@@ -3,7 +3,7 @@ module Node.Express.Passport.Strategy.Local where
 import Data.Function.Uncurried
 import Effect
 import Effect.Uncurried
-import Node.Express.Passport.Strategy.Common
+import Node.Express.Passport.Types
 import Prelude
 
 import Data.Maybe (Maybe(..))
@@ -30,6 +30,8 @@ newtype Password
   = Password String
 
 derive instance newtypePassword :: Newtype Password _
+
+------------------------------------------------------------------------------------------------------------------------
 
 type PassportStrategyLocal__Implementation__CredentialsVerified user info
   = EffectFn3 (Nullable Error) (Nullable user) (Nullable info) Unit
@@ -58,12 +60,12 @@ foreign import _passportStrategyLocal ::
   (PassportStrategyLocal__Implementation__Verify user info)
   PassportStrategy
 
-passportStrategyLocal ::
+unsafePassportStrategyLocal ::
   forall user info.
   PassportStrategyLocalOptions ->
   PassportStrategyLocal__Verify user info ->
   PassportStrategy
-passportStrategyLocal options verify =
+unsafePassportStrategyLocal options verify =
   runFn2
   _passportStrategyLocal
   options
@@ -86,3 +88,11 @@ passportStrategyLocal options verify =
       (Nullable.toNullable info)
     )
   )
+
+passportStrategyLocal ::
+  forall proxy user info.
+  proxy user -> proxy info ->
+  PassportStrategyLocalOptions ->
+  PassportStrategyLocal__Verify user info ->
+  PassportStrategy
+passportStrategyLocal _ _ = unsafePassportStrategyLocal

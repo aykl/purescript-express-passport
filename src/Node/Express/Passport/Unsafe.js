@@ -1,17 +1,3 @@
-const passport = require('passport')
-
-exports._getPassport = function() {
-  return require('passport')
-}
-
-exports._passportInitialize = function(passport, options) {
-  return passport.initialize(options)
-}
-
-exports._passportSession = function(passport, options) {
-  return passport.session(options)
-}
-
 exports._addSerializeUser = function(passport, serializer) {
   passport.serializeUser(serializer)
 }
@@ -41,16 +27,8 @@ exports._authenticate = function(passport, strategy, options, callback) {
     )
 }
 
-exports._isAuthenticated = function(req) {
-  return req.isAuthenticated()
-}
-
 exports._logIn = function(req, user, options, done) {
   req.logIn(user, options, done)
-}
-
-exports._logOut = function(req) {
-  req.logOut()
 }
 
 exports._getUser = function(req) {
