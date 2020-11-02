@@ -55,13 +55,13 @@ exports._logOut = function(req) {
 
 exports._getUser = function(req) {
   if (!(req._passport && req._passport.instance)) {
-    throw new Error('passport is not initialized?')
+    throw new Error('passport is not initialized')
   }
 
   const property = req._passport.instance._userProperty
 
   if (!property) {
-    throw new Error('wtf, empty _userProperty')
+    throw new Error('req._passport.instance._userProperty is empty')
   }
 
   const user = req[property]

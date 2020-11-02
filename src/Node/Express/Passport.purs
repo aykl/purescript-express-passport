@@ -311,6 +311,4 @@ foreign import _getUser :: forall user . EffectFn1 Request (Nullable user)
 
 getUser :: forall user . HandlerM (Maybe user)
 getUser =
-  HandlerM \req _ _ -> do
-    user <- liftEffect $ runEffectFn1 _getUser req
-    pure $ Nullable.toMaybe user
+  HandlerM \req _ _ -> liftEffect $ runEffectFn1 _getUser req <#> Nullable.toMaybe
