@@ -28,9 +28,6 @@ foreign import _getPassport :: Effect Passport
 getPassport :: Effect Passport
 getPassport = _getPassport
 
-type ExpressMiddleware
-  = EffectFn3 Request Response (Effect Unit) Unit
-
 -- | Type of options for `passport.initialize(options);` call
 type PassportInitializeOptions
   = { userProperty :: String }
@@ -40,10 +37,10 @@ type PassportInitializeOptions
 defaultPassportInitializeOptions :: PassportInitializeOptions
 defaultPassportInitializeOptions = { userProperty: "user" }
 
-foreign import _passportInitialize :: EffectFn2 Passport PassportInitializeOptions ExpressMiddleware
+foreign import _passportInitialize :: EffectFn2 Passport PassportInitializeOptions Middleware
 
 -- | Binding for `passport.initialize(options);` call
-passportInitialize :: Passport -> PassportInitializeOptions -> Effect ExpressMiddleware
+passportInitialize :: Passport -> PassportInitializeOptions -> Effect Middleware
 passportInitialize = runEffectFn2 _passportInitialize
 
 -- | Type of options for `passport.session(options);` call
@@ -54,10 +51,10 @@ type PassportSessionOptions
 defaultPassportSessionOptions :: PassportSessionOptions
 defaultPassportSessionOptions = { pauseStream: false }
 
-foreign import _passportSession :: EffectFn2 Passport PassportSessionOptions ExpressMiddleware
+foreign import _passportSession :: EffectFn2 Passport PassportSessionOptions Middleware
 
 -- | Binding for `passport.session(options);` call
-passportSession :: forall user.  Passport -> PassportSessionOptions -> Effect ExpressMiddleware
+passportSession :: forall user.  Passport -> PassportSessionOptions -> Effect Middleware
 passportSession = runEffectFn2 _passportSession
 
 type AddSerializeUser__Implementation__SerializerCallback
