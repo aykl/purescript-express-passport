@@ -1,7 +1,6 @@
 module Test.Main where
 
 import Prelude
-
 import Data.Argonaut.Core (Json)
 import Data.Argonaut.Decode (decodeJson)
 import Data.Argonaut.Encode (encodeJson)
