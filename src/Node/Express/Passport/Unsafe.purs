@@ -106,6 +106,10 @@ type AuthenticateOptions
     , failureMessage :: AuthenticationMessage
     , failureFlash :: AuthenticationMessage
     , assignProperty :: Maybe String
+    -- from https://github.com/jaredhanson/passport/blob/08f57c2e3086955f06f42d9ac7ad466d1f10019c/lib/middleware/authenticate.js#L257
+    -- you should set req.sessio.returnTo
+    -- like this https://github.com/graphile/bootstrap-react-apollo/blob/fbeab7b9c2a51b48995a19872b71545428091295/server/middleware/installPassportStrategy.js#L7-L26
+    , successReturnToOrRedirect :: Maybe String
     }
 
 defaultAuthenticateOptions :: AuthenticateOptions
@@ -118,6 +122,7 @@ defaultAuthenticateOptions =
   , failureMessage: AuthenticationMessage__Disable
   , failureFlash: AuthenticationMessage__Disable
   , assignProperty: Nothing
+  , successReturnToOrRedirect: Nothing
   }
 
 data Authenticate__CustomCallbackResult user
