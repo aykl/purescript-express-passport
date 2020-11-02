@@ -11,8 +11,11 @@ import Data.Nullable as Nullable
 import Effect.Aff (Aff, runAff_)
 import Effect.Exception (Error)
 import Effect.Uncurried (EffectFn3, EffectFn4, mkEffectFn4, runEffectFn3)
-import Node.Express.Passport.Types (PassportStrategy)
+import Node.Express.Passport.Types (PassportStrategy, StrategyId(..))
 import Node.Express.Types (Request)
+
+localStrategyId :: StrategyId
+localStrategyId = StrategyId "local"
 
 type PassportStrategyLocalOptions
   = { usernameField :: String

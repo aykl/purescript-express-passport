@@ -9,9 +9,9 @@ import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Console (log)
-import Node.Express.Passport (AddDeserializeUser__Callback, AddSerializeUser__Callback, DeserializedUser(..), Passport, SerializedUser(..), getPassport, setStrategy, PassportStrategy)
+import Node.Express.Passport (AddDeserializeUser__Callback, AddSerializeUser__Callback, DeserializedUser(..), Passport, SerializedUser(..), PassportStrategy)
 import Node.Express.Passport as Passport
-import Node.Express.Passport.Strategy.Local (PassportStrategyLocal__CredentialsVerifiedResult(..), Password, Username(..), defaultPassportStrategyLocalOptions)
+import Node.Express.Passport.Strategy.Local (PassportStrategyLocal__CredentialsVerifiedResult(..), Password, Username(..))
 import Node.Express.Passport.Strategy.Local as Passport.Local
 import Node.Express.Types (Request)
 import Type.Prelude (Proxy(..))
@@ -79,8 +79,8 @@ verify req (Username username) password = pure { result: PassportStrategyLocal__
 
 initPassport :: Effect Passport
 initPassport = do
-  passport <- getPassport
-  setStrategy passport "local" $ passportMethods.passportStrategyLocal defaultPassportStrategyLocalOptions $ verify
+  passport <- Passport.getPassport
+  Passport.setStrategy passport Passport.Local.localStrategyId $ passportMethods.passportStrategyLocal Passport.Local.defaultPassportStrategyLocalOptions $ verify
   passportMethods.addDeserializeUser passport passportDeserializeString
   passportMethods.addSerializeUser passport passportSerializeString
   -- TODO: This line should cause type error when uncommented
