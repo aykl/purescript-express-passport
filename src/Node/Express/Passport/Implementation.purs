@@ -1,24 +1,13 @@
 module Node.Express.Passport.Implementation where
 
-import Data.Function.Uncurried
-import Effect
-import Effect.Aff
-import Effect.Uncurried
-import Foreign
-import Node.Express.Passport.Types
-import Node.Express.Types
+import Effect (Effect)
+import Effect.Uncurried (EffectFn1, EffectFn2, runEffectFn1, runEffectFn2)
+import Node.Express.Passport.Types (Passport)
+import Node.Express.Types (Middleware, Request)
 import Prelude
-import Node.Express.Passport.Utils
 
-import Data.Argonaut.Core (Json)
-import Data.Either (Either(..))
-import Data.Maybe (Maybe(..))
-import Data.Nullable (Nullable)
-import Data.Nullable as Nullable
 import Effect.Class (liftEffect)
-import Effect.Exception (Error)
-import Node.Express.Handler (HandlerM(..), Handler, runHandlerM)
-import Unsafe.Coerce (unsafeCoerce)
+import Node.Express.Handler (HandlerM(..))
 
 foreign import _getPassport :: Effect Passport
 

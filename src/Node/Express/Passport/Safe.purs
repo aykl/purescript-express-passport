@@ -1,27 +1,13 @@
 module Node.Express.Passport.Safe where
 
-import Node.Express.Passport.Unsafe as Unsafe
-import Node.Express.Passport.Unsafe
+import Node.Express.Passport.Unsafe (AddDeserializeUser__Callback, AddSerializeUser__Callback, AuthenticateOptions, Authenticate__CustomCallback, LogIn__CustomCallback, LoginOptions, unsafeAddDeserializeUser, unsafeAddSerializeUser, unsafeAuthenticate, unsafeGetUser, unsafeLogIn)
 
-import Data.Function.Uncurried
-import Effect
-import Effect.Aff
-import Effect.Uncurried
-import Foreign
-import Node.Express.Passport.Types
-import Node.Express.Types
+import Effect (Effect)
+import Node.Express.Passport.Types (Passport, StrategyId)
 import Prelude
-import Node.Express.Passport.Utils
 
-import Data.Argonaut.Core (Json)
-import Data.Either (Either(..))
-import Data.Maybe (Maybe(..))
-import Data.Nullable (Nullable)
-import Data.Nullable as Nullable
-import Effect.Class (liftEffect)
-import Effect.Exception (Error)
-import Node.Express.Handler (HandlerM(..), Handler, runHandlerM)
-import Unsafe.Coerce (unsafeCoerce)
+import Data.Maybe (Maybe)
+import Node.Express.Handler (Handler, HandlerM)import Node.Express.Handler (Handler, HandlerM)
 
 getUser :: forall proxy user . proxy user -> HandlerM (Maybe user)
 getUser _ = unsafeGetUser

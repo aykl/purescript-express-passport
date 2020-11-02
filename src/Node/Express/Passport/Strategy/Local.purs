@@ -1,12 +1,12 @@
 module Node.Express.Passport.Strategy.Local where
 
-import Data.Function.Uncurried
-import Effect
-import Effect.Uncurried
-import Node.Express.Passport.Types
+import Data.Function.Uncurried (Fn2, runFn2)
+import Effect (Effect)
+import Effect.Uncurried (EffectFn3, EffectFn4, mkEffectFn4, runEffectFn3)
+import Node.Express.Passport.Types (PassportStrategy)
 import Prelude
 
-import Data.Maybe (Maybe(..))
+import Data.Maybe (Maybe)
 import Data.Newtype (class Newtype)
 import Data.Nullable (Nullable)
 import Data.Nullable as Nullable

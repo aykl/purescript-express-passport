@@ -1,14 +1,14 @@
 module Node.Express.Passport.Unsafe where
 
-import Data.Function.Uncurried
-import Effect
-import Effect.Aff
-import Effect.Uncurried
-import Foreign
-import Node.Express.Passport.Types
-import Node.Express.Types
+import Data.Function.Uncurried (Fn4, runFn4)
+import Effect (Effect)
+import Effect.Aff (Aff, runAff_)
+import Effect.Uncurried (EffectFn1, EffectFn2, EffectFn3, EffectFn4, mkEffectFn1, mkEffectFn3, mkEffectFn4, runEffectFn1, runEffectFn2, runEffectFn3, runEffectFn4)
+import Foreign (Foreign, unsafeToForeign)
+import Node.Express.Passport.Types (Passport, StrategyId)
+import Node.Express.Types (Request, Response)
 import Prelude
-import Node.Express.Passport.Utils
+import Node.Express.Passport.Utils (magicPass)
 
 import Data.Argonaut.Core (Json)
 import Data.Either (Either(..))

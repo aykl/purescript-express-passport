@@ -1,16 +1,15 @@
 module Test.Main where
 
-import Effect
+import Effect (Effect)
 import Prelude
-
 import Data.Argonaut.Decode (decodeJson)
 import Data.Argonaut.Encode (encodeJson)
 import Data.Either (either)
 import Data.Maybe (Maybe(..))
 import Effect.Console (log)
-import Node.Express.Passport
+import Node.Express.Passport (AddDeserializeUser__Callback, AddSerializeUser__Callback, DeserializedUser(..), Passport, SerializedUser(..), getPassport, setStrategy)
 import Node.Express.Passport as Passport
-import Node.Express.Passport.Strategy.Local
+import Node.Express.Passport.Strategy.Local (PassportStrategyLocal__CredentialsVerified, PassportStrategyLocal__CredentialsVerifiedResult(..), Password, Username(..), defaultPassportStrategyLocalOptions)
 import Node.Express.Passport.Strategy.Local as Passport.Local
 import Node.Express.Types (Request)
 import Type.Prelude (Proxy(..))
@@ -20,23 +19,40 @@ main = do
   log "You should add some tests."
 
 ------------------------------------------------------------
-
 -- fixed passport methods for type-safety
+passportMethods ::
+  { addDeserializeUser :: Passport -> (Request -> Json -> Aff (DeserializedUser String)) -> Effect Unit
+  , addSerializeUser :: Passport -> (Request -> String -> Aff SerializedUser) -> Effect Unit
+  , passportStrategyLocal ::
+    { passwordField :: String
+    , usernameField :: String
+    } ->
+    ( Request ->
+      Username ->
+      Password ->
+      ( { info :: Maybe Void
+        , result :: PassportStrategyLocal__CredentialsVerifiedResult String
+        } ->
+        Effect Unit
+      ) ->
+      Effect Unit
+    ) ->
+    PassportStrategy
+  }
 passportMethods =
   let
-      proxyUser :: Proxy String
-      proxyUser = Proxy
+    proxyUser :: Proxy String
+    proxyUser = Proxy
 
-      proxyInfo :: Proxy Void
-      proxyInfo = Proxy
+    proxyInfo :: Proxy Void
+    proxyInfo = Proxy
   in
-  { addSerializeUser: Passport.addSerializeUser proxyUser
-  , addDeserializeUser: Passport.addDeserializeUser proxyUser
-  , passportStrategyLocal: Passport.Local.passportStrategyLocal proxyUser proxyInfo
-  }
+    { addSerializeUser: Passport.addSerializeUser proxyUser
+    , addDeserializeUser: Passport.addDeserializeUser proxyUser
+    , passportStrategyLocal: Passport.Local.passportStrategyLocal proxyUser proxyInfo
+    }
 
 ------------------------------------------------------------
-
 passportSerializeString :: AddSerializeUser__Callback String
 passportSerializeString req user = pure $ SerializedUser__Result $ Just $ encodeJson user
 
@@ -57,8 +73,7 @@ verify ::
   Password ->
   PassportStrategyLocal__CredentialsVerified String info ->
   Effect Unit
-verify req (Username username) password verified =
-  verified { result: PassportStrategyLocal__CredentialsVerifiedResult__Success username, info: Nothing }
+verify req (Username username) password verified = verified { result: PassportStrategyLocal__CredentialsVerifiedResult__Success username, info: Nothing }
 
 initPassport :: Effect Passport
 initPassport = do
