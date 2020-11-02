@@ -54,7 +54,7 @@ defaultPassportSessionOptions = { pauseStream: false }
 foreign import _passportSession :: EffectFn2 Passport PassportSessionOptions Middleware
 
 -- | Binding for `passport.session(options);` call
-passportSession :: forall user.  Passport -> PassportSessionOptions -> Effect Middleware
+passportSession :: Passport -> PassportSessionOptions -> Effect Middleware
 passportSession = runEffectFn2 _passportSession
 
 type AddSerializeUser__Implementation__SerializerCallback
