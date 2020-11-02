@@ -7,7 +7,7 @@ import Node.Express.Passport.Types (Passport, StrategyId)
 import Prelude
 
 import Data.Maybe (Maybe)
-import Node.Express.Handler (Handler, HandlerM)import Node.Express.Handler (Handler, HandlerM)
+import Node.Express.Handler (Handler, HandlerM)
 
 getUser :: forall proxy user . proxy user -> HandlerM (Maybe user)
 getUser _ = unsafeGetUser

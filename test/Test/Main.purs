@@ -1,13 +1,16 @@
 module Test.Main where
 
-import Effect (Effect)
 import Prelude
+
+import Data.Argonaut.Core (Json)
 import Data.Argonaut.Decode (decodeJson)
 import Data.Argonaut.Encode (encodeJson)
 import Data.Either (either)
 import Data.Maybe (Maybe(..))
+import Effect (Effect)
+import Effect.Aff (Aff)
 import Effect.Console (log)
-import Node.Express.Passport (AddDeserializeUser__Callback, AddSerializeUser__Callback, DeserializedUser(..), Passport, SerializedUser(..), getPassport, setStrategy)
+import Node.Express.Passport (AddDeserializeUser__Callback, AddSerializeUser__Callback, DeserializedUser(..), Passport, SerializedUser(..), getPassport, setStrategy, PassportStrategy)
 import Node.Express.Passport as Passport
 import Node.Express.Passport.Strategy.Local (PassportStrategyLocal__CredentialsVerified, PassportStrategyLocal__CredentialsVerifiedResult(..), Password, Username(..), defaultPassportStrategyLocalOptions)
 import Node.Express.Passport.Strategy.Local as Passport.Local
