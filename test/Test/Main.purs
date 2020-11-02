@@ -80,7 +80,7 @@ verify req (Username username) password = pure { result: PassportStrategyLocal__
 initPassport :: Effect Passport
 initPassport = do
   passport <- Passport.getPassport
-  Passport.setStrategy passport Passport.Local.localStrategyId $ passportMethods.passportStrategyLocal Passport.Local.defaultPassportStrategyLocalOptions $ verify
+  Passport.useStrategy passport Passport.Local.localStrategyId $ passportMethods.passportStrategyLocal Passport.Local.defaultPassportStrategyLocalOptions $ verify
   passportMethods.addDeserializeUser passport passportDeserializeString
   passportMethods.addSerializeUser passport passportSerializeString
   -- TODO: This line should cause type error when uncommented

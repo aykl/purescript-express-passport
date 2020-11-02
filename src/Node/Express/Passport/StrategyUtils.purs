@@ -2,21 +2,21 @@ module Node.Express.Passport.StrategyUtils where
 
 import Prelude
 import Effect (Effect)
-import Data.Function.Uncurried (Fn3, runFn3)
+import Effect.Uncurried (EffectFn3, runEffectFn3)
 import Node.Express.Passport.Types (Passport, PassportStrategy, StrategyId)
 
-foreign import _setStrategy ::
+foreign import _useStrategy ::
   forall user.
-  Fn3
+  EffectFn3
     Passport
     StrategyId
     PassportStrategy
-    (Effect Unit)
+    Unit
 
-setStrategy ::
+useStrategy ::
   forall user.
   Passport ->
   StrategyId ->
   PassportStrategy ->
   Effect Unit
-setStrategy = runFn3 _setStrategy
+useStrategy = runEffectFn3 _useStrategy
