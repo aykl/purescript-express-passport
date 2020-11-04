@@ -1,13 +1,14 @@
 module Node.Express.Passport.Implementation where
 
-import Effect (Effect)
-import Effect.Uncurried (EffectFn1, EffectFn2, runEffectFn1, runEffectFn2)
-import Node.Express.Passport.Types (Passport)
-import Node.Express.Types (Middleware, Request)
 import Prelude
 
+import Data.Function.Uncurried (Fn2, runFn2)
+import Effect (Effect)
 import Effect.Class (liftEffect)
+import Effect.Uncurried (EffectFn1, EffectFn2, runEffectFn1, runEffectFn2)
 import Node.Express.Handler (HandlerM(..))
+import Node.Express.Passport.Types (Passport)
+import Node.Express.Types (Middleware, Request)
 
 -- | Initialize and obtain a Passport singleton instance
 foreign import getPassport :: Effect Passport
@@ -23,11 +24,11 @@ type PassportInitializeOptions
 defaultPassportInitializeOptions :: PassportInitializeOptions
 defaultPassportInitializeOptions = { userProperty: "user" }
 
-foreign import _passportInitialize :: EffectFn2 Passport PassportInitializeOptions Middleware
+foreign import _passportInitialize :: Fn2 Passport PassportInitializeOptions Middleware
 
 -- | Binding for `passport.initialize(options);` call
-passportInitialize :: Passport -> PassportInitializeOptions -> Effect Middleware
-passportInitialize = runEffectFn2 _passportInitialize
+passportInitialize :: Passport -> PassportInitializeOptions -> Middleware
+passportInitialize = runFn2 _passportInitialize
 
 ------------------------------------------------------------------------------------------------------------------------
 
@@ -39,11 +40,11 @@ type PassportSessionOptions
 defaultPassportSessionOptions :: PassportSessionOptions
 defaultPassportSessionOptions = { pauseStream: false }
 
-foreign import _passportSession :: EffectFn2 Passport PassportSessionOptions Middleware
+foreign import _passportSession :: Fn2 Passport PassportSessionOptions Middleware
 
 -- | Binding for `passport.session(options);` call
-passportSession :: Passport -> PassportSessionOptions -> Effect Middleware
-passportSession = runEffectFn2 _passportSession
+passportSession :: Passport -> PassportSessionOptions -> Middleware
+passportSession = runFn2 _passportSession
 
 ------------------------------------------------------------------------------------------------------------------------
 
