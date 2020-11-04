@@ -9,11 +9,8 @@ import Prelude
 import Effect.Class (liftEffect)
 import Node.Express.Handler (HandlerM(..))
 
-foreign import _getPassport :: Effect Passport
-
 -- | Initialize and obtain a Passport singleton instance
-getPassport :: Effect Passport
-getPassport = _getPassport
+foreign import getPassport :: Effect Passport
 
 ------------------------------------------------------------------------------------------------------------------------
 
