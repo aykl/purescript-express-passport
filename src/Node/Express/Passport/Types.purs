@@ -6,6 +6,7 @@ data Passport
 
 data PassportStrategy
 
-newtype StrategyId = StrategyId String
+newtype StrategyId
+  = StrategyId String
 
 derive instance newtypeStrategyId :: Newtype StrategyId _

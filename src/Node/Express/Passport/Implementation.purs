@@ -1,11 +1,10 @@
 module Node.Express.Passport.Implementation where
 
 import Prelude
-
 import Data.Function.Uncurried (Fn2, runFn2)
 import Effect (Effect)
 import Effect.Class (liftEffect)
-import Effect.Uncurried (EffectFn1, EffectFn2, runEffectFn1, runEffectFn2)
+import Effect.Uncurried (EffectFn1, runEffectFn1)
 import Node.Express.Handler (HandlerM(..))
 import Node.Express.Passport.Types (Passport)
 import Node.Express.Types (Middleware, Request)
@@ -14,7 +13,6 @@ import Node.Express.Types (Middleware, Request)
 foreign import getPassport :: Effect Passport
 
 ------------------------------------------------------------------------------------------------------------------------
-
 -- | Type of options for `passport.initialize(options);` call
 type PassportInitializeOptions
   = { userProperty :: String }
@@ -31,7 +29,6 @@ passportInitialize :: Passport -> PassportInitializeOptions -> Middleware
 passportInitialize = runFn2 _passportInitialize
 
 ------------------------------------------------------------------------------------------------------------------------
-
 -- | Type of options for `passport.session(options);` call
 type PassportSessionOptions
   = { pauseStream :: Boolean }
@@ -47,14 +44,12 @@ passportSession :: Passport -> PassportSessionOptions -> Middleware
 passportSession = runFn2 _passportSession
 
 ------------------------------------------------------------------------------------------------------------------------
-
 foreign import _isAuthenticated :: EffectFn1 Request Boolean
 
 isAuthenticated :: HandlerM Boolean
 isAuthenticated = HandlerM \req _ _ -> liftEffect $ runEffectFn1 _isAuthenticated req
 
 ------------------------------------------------------------------------------------------------------------------------
-
 foreign import _logOut :: EffectFn1 Request Unit
 
 logOut :: HandlerM Unit

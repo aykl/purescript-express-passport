@@ -1,7 +1,6 @@
 module Node.Express.Passport.Unsafe where
 
 import Prelude
-
 import Data.Argonaut.Core (Json)
 import Data.Either (Either(..))
 import Data.Function.Uncurried (Fn4, runFn4)
@@ -20,15 +19,14 @@ import Node.Express.Passport.Utils (magicPass)
 import Node.Express.Types (Request, Response)
 import Unsafe.Coerce (unsafeCoerce)
 
-foreign import _getUser :: forall user . EffectFn1 Request (Nullable user)
+foreign import _getUser :: forall user. EffectFn1 Request (Nullable user)
 
-unsafeGetUser :: forall user . Request -> Effect (Maybe user)
+unsafeGetUser :: forall user. Request -> Effect (Maybe user)
 unsafeGetUser req = runEffectFn1 _getUser req <#> Nullable.toMaybe
 
 ------------------------------------------------------------------------------------------------------------------------
-
 foreign import _logIn ::
-  forall user .
+  forall user.
   EffectFn4
     Request
     user
@@ -36,7 +34,8 @@ foreign import _logIn ::
     (Nullable LogIn__Implementation__CustomCallback)
     Unit
 
-type LogIn__Implementation__CustomCallback = EffectFn1 (Nullable Error) Unit
+type LogIn__Implementation__CustomCallback
+  = EffectFn1 (Nullable Error) Unit
 
 type LoginOptions
   = { session :: Boolean }
@@ -44,7 +43,8 @@ type LoginOptions
 defaultLoginOptions :: LoginOptions
 defaultLoginOptions = { session: true }
 
-type LogIn__CustomCallback = Maybe Error -> Handler
+type LogIn__CustomCallback
+  = Maybe Error -> Handler
 
 unsafeLogIn ::
   forall user.
@@ -54,19 +54,18 @@ unsafeLogIn ::
   Handler
 unsafeLogIn user options onLogin =
   HandlerM \req res nxt ->
-    liftEffect $
-      runEffectFn4
-      _logIn
-      req
-      user
-      options
-      (case onLogin of
-            Just onLogin' -> Nullable.notNull $ mkEffectFn1 \error -> runHandlerM (onLogin' (Nullable.toMaybe error)) req res nxt
-            Nothing -> Nullable.null
-      )
+    liftEffect
+      $ runEffectFn4
+          _logIn
+          req
+          user
+          options
+          ( case onLogin of
+              Just onLogin' -> Nullable.notNull $ mkEffectFn1 \error -> runHandlerM (onLogin' (Nullable.toMaybe error)) req res nxt
+              Nothing -> Nullable.null
+          )
 
 ------------------------------------------------------------------------------------------------------------------------
-
 type Authenticate__Implementation__Callback user info
   = EffectFn4 (Nullable Error) (Nullable user) (Nullable info) (Nullable Number) Unit
 
@@ -82,7 +81,7 @@ type Authenticate__Implementation__Options
     }
 
 foreign import _authenticate ::
-  forall user info .
+  forall user info.
   Fn4
     Passport
     StrategyId
@@ -133,8 +132,8 @@ type Authenticate__CustomCallback info user
   = { result :: Authenticate__CustomCallbackResult user
     , info :: Maybe info
     , status :: Maybe Number
-    }
-    -> Handler
+    } ->
+    Handler
 
 unsafeAuthenticate ::
   forall info user.
@@ -151,92 +150,90 @@ unsafeAuthenticate passport strategyid options onAuthenticate =
       convertAuthenticationMessage AuthenticationMessage__Disable = unsafeToForeign $ Nullable.null
 
       optionsImplementation =
-        { session:         options.session
+        { session: options.session
         , successRedirect: Nullable.toNullable options.successRedirect
-        , successMessage:  convertAuthenticationMessage options.successMessage
-        , successFlash:    convertAuthenticationMessage options.successFlash
+        , successMessage: convertAuthenticationMessage options.successMessage
+        , successFlash: convertAuthenticationMessage options.successFlash
         , failureRedirect: Nullable.toNullable options.failureRedirect
-        , failureMessage:  convertAuthenticationMessage options.failureMessage
-        , failureFlash:    convertAuthenticationMessage options.failureFlash
-        , assignProperty:  Nullable.toNullable options.assignProperty
+        , failureMessage: convertAuthenticationMessage options.failureMessage
+        , failureFlash: convertAuthenticationMessage options.failureFlash
+        , assignProperty: Nullable.toNullable options.assignProperty
         }
-
-    liftEffect $
-      runEffectFn3
-      ( runFn4
-        _authenticate
-        passport
-        strategyid
-        optionsImplementation
-        ( case onAuthenticate of
-               Just onAuthenticate' -> Nullable.notNull $ mkEffectFn4 \error user info status ->
-                  runHandlerM
-                  ( onAuthenticate'
-                    { result:
-                        case Nullable.toMaybe error of
-                             Just error' -> Authenticate__CustomCallbackResult__Error error'
-                             Nothing ->
-                               case Nullable.toMaybe user of
-                                    Just user' -> Authenticate__CustomCallbackResult__Success user'
-                                    Nothing -> Authenticate__CustomCallbackResult__AuthenticationError
-                    , info: Nullable.toMaybe info
-                    , status: Nullable.toMaybe status
-                    }
-                  )
-                  req
-                  res
-                  nxt
-               Nothing -> Nullable.null
-        )
-      )
-      req
-      res
-      nxt
+    liftEffect
+      $ runEffectFn3
+          ( runFn4
+              _authenticate
+              passport
+              strategyid
+              optionsImplementation
+              ( case onAuthenticate of
+                  Just onAuthenticate' ->
+                    Nullable.notNull
+                      $ mkEffectFn4 \error user info status ->
+                          runHandlerM
+                            ( onAuthenticate'
+                                { result:
+                                  case Nullable.toMaybe error of
+                                    Just error' -> Authenticate__CustomCallbackResult__Error error'
+                                    Nothing -> case Nullable.toMaybe user of
+                                      Just user' -> Authenticate__CustomCallbackResult__Success user'
+                                      Nothing -> Authenticate__CustomCallbackResult__AuthenticationError
+                                , info: Nullable.toMaybe info
+                                , status: Nullable.toMaybe status
+                                }
+                            )
+                            req
+                            res
+                            nxt
+                  Nothing -> Nullable.null
+              )
+          )
+          req
+          res
+          nxt
 
 ------------------------------------------------------------------------------------------------------------------------
-
 type AddSerializeUser__Implementation__SerializerCallback
   = EffectFn2 (Nullable Error) (Nullable Json) Unit
 
 type AddSerializeUser__Implementation__Serializer user
   = EffectFn3 Request user AddSerializeUser__Implementation__SerializerCallback Unit
 
-foreign import _addSerializeUser
-  :: forall user
-   . EffectFn2
-      Passport
-      (AddSerializeUser__Implementation__Serializer user)
-      Unit
+foreign import _addSerializeUser ::
+  forall user.
+  EffectFn2
+    Passport
+    (AddSerializeUser__Implementation__Serializer user)
+    Unit
 
 data SerializedUser
   = SerializedUser__Result (Maybe Json)
   | SerializedUser__Pass
 
-type AddSerializeUser__Callback user = Request -> user -> Aff SerializedUser
+type AddSerializeUser__Callback user
+  = Request -> user -> Aff SerializedUser
 
-unsafeAddSerializeUser
-  :: forall user
-   . Passport
-  -> AddSerializeUser__Callback user
-  -> Effect Unit
+unsafeAddSerializeUser ::
+  forall user.
+  Passport ->
+  AddSerializeUser__Callback user ->
+  Effect Unit
 unsafeAddSerializeUser passport serializeAff =
   runEffectFn2
-  _addSerializeUser
-  passport
-  ( mkEffectFn3 \req user callback ->
-      runAff_
-      ( case _ of
-            Left error -> runEffectFn2 callback (Nullable.notNull error) Nullable.null
-            Right s ->
-              case s of
-                    SerializedUser__Result result -> runEffectFn2 callback (Nullable.notNull (unsafeCoerce result)) Nullable.null
-                    SerializedUser__Pass -> runEffectFn2 callback (Nullable.notNull (unsafeCoerce magicPass)) Nullable.null
-      )
-      (serializeAff req user)
-  )
+    _addSerializeUser
+    passport
+    ( mkEffectFn3 \req user callback ->
+        runAff_
+          ( case _ of
+              Left error -> runEffectFn2 callback (Nullable.notNull error) Nullable.null
+              Right s -> case s of
+                SerializedUser__Result result -> runEffectFn2 callback (Nullable.notNull (unsafeCoerce result)) Nullable.null
+                SerializedUser__Pass -> runEffectFn2 callback (Nullable.notNull (unsafeCoerce magicPass)) Nullable.null
+          )
+          (serializeAff req user)
+    )
 
 ------------------------------------------------------------------------------------------------------------------------
-
 type AddDeserializeUser__Implementation__DeserializerCallback user
   = EffectFn2 (Nullable Error) (Nullable user) Unit
 
@@ -249,25 +246,25 @@ data DeserializedUser user
   = DeserializedUser__Result (Maybe user)
   | DeserializedUser__Pass
 
-type AddDeserializeUser__Callback user = Request -> Json -> Aff (DeserializedUser user)
+type AddDeserializeUser__Callback user
+  = Request -> Json -> Aff (DeserializedUser user)
 
-unsafeAddDeserializeUser
-  :: forall user
-   . Passport
-  -> AddDeserializeUser__Callback user
-  -> Effect Unit
+unsafeAddDeserializeUser ::
+  forall user.
+  Passport ->
+  AddDeserializeUser__Callback user ->
+  Effect Unit
 unsafeAddDeserializeUser passport deserializeAff =
   runEffectFn2
-  _addDeserializeUser
-  passport
-  ( mkEffectFn3 \req user callback ->
-      runAff_
-      ( case _ of
-            Left error -> runEffectFn2 callback (Nullable.notNull error) Nullable.null
-            Right s ->
-              case s of
-                    DeserializedUser__Result result -> runEffectFn2 callback (Nullable.notNull (unsafeCoerce result)) Nullable.null
-                    DeserializedUser__Pass -> runEffectFn2 callback (Nullable.notNull (unsafeCoerce magicPass)) Nullable.null
-      )
-      (deserializeAff req user)
-  )
+    _addDeserializeUser
+    passport
+    ( mkEffectFn3 \req user callback ->
+        runAff_
+          ( case _ of
+              Left error -> runEffectFn2 callback (Nullable.notNull error) Nullable.null
+              Right s -> case s of
+                DeserializedUser__Result result -> runEffectFn2 callback (Nullable.notNull (unsafeCoerce result)) Nullable.null
+                DeserializedUser__Pass -> runEffectFn2 callback (Nullable.notNull (unsafeCoerce magicPass)) Nullable.null
+          )
+          (deserializeAff req user)
+    )

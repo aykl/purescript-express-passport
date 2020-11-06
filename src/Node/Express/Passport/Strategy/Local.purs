@@ -1,7 +1,6 @@
 module Node.Express.Passport.Strategy.Local where
 
 import Prelude
-
 import Data.Either (Either(..))
 import Data.Function.Uncurried (Fn2, runFn2)
 import Data.Maybe (Maybe)
@@ -36,7 +35,6 @@ newtype Password
 derive instance newtypePassword :: Newtype Password _
 
 ------------------------------------------------------------------------------------------------------------------------
-
 type PassportStrategyLocal__Implementation__CredentialsVerified user info
   = EffectFn3 (Nullable Error) (Nullable user) (Nullable info) Unit
 
@@ -48,20 +46,20 @@ data PassportStrategyLocal__CredentialsVerifiedResult user
   | PassportStrategyLocal__CredentialsVerifiedResult__Success user
 
 type PassportStrategyLocal__Verify user info
-  = Request
-  -> Username
-  -> Password
-  -> Aff
-    { result :: PassportStrategyLocal__CredentialsVerifiedResult user
-    , info :: Maybe info
-    }
+  = Request ->
+    Username ->
+    Password ->
+    Aff
+      { result :: PassportStrategyLocal__CredentialsVerifiedResult user
+      , info :: Maybe info
+      }
 
 foreign import _passportStrategyLocal ::
   forall user info.
   Fn2
-  PassportStrategyLocalOptions
-  (PassportStrategyLocal__Implementation__Verify user info)
-  PassportStrategy
+    PassportStrategyLocalOptions
+    (PassportStrategyLocal__Implementation__Verify user info)
+    PassportStrategy
 
 unsafePassportStrategyLocal ::
   forall user info.
@@ -70,33 +68,34 @@ unsafePassportStrategyLocal ::
   PassportStrategy
 unsafePassportStrategyLocal options verify =
   runFn2
-  _passportStrategyLocal
-  options
-  (mkEffectFn4 \req username password verified ->
-    runAff_
-    (case _ of
-          Left error ->
-            runEffectFn3
-            verified
-            (Nullable.notNull error)
-            (Nullable.null)
-            (Nullable.null)
-          Right { result, info } ->
-            runEffectFn3
-            verified
-            Nullable.null
-            ( case result of
-                  PassportStrategyLocal__CredentialsVerifiedResult__Success user -> Nullable.notNull user
-                  _ -> Nullable.null
-            )
-            (Nullable.toNullable info)
+    _passportStrategyLocal
+    options
+    ( mkEffectFn4 \req username password verified ->
+        runAff_
+          ( case _ of
+              Left error ->
+                runEffectFn3
+                  verified
+                  (Nullable.notNull error)
+                  (Nullable.null)
+                  (Nullable.null)
+              Right { result, info } ->
+                runEffectFn3
+                  verified
+                  Nullable.null
+                  ( case result of
+                      PassportStrategyLocal__CredentialsVerifiedResult__Success user -> Nullable.notNull user
+                      _ -> Nullable.null
+                  )
+                  (Nullable.toNullable info)
+          )
+          (verify req username password)
     )
-    (verify req username password)
-  )
 
 passportStrategyLocal ::
   forall proxy user info.
-  proxy user -> proxy info ->
+  proxy user ->
+  proxy info ->
   PassportStrategyLocalOptions ->
   PassportStrategyLocal__Verify user info ->
   PassportStrategy
