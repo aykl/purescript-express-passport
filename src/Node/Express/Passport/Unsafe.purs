@@ -1,30 +1,29 @@
 module Node.Express.Passport.Unsafe where
 
-import Data.Function.Uncurried (Fn4, runFn4)
-import Effect (Effect)
-import Effect.Aff (Aff, runAff_)
-import Effect.Uncurried (EffectFn1, EffectFn2, EffectFn3, EffectFn4, mkEffectFn1, mkEffectFn3, mkEffectFn4, runEffectFn1, runEffectFn2, runEffectFn3, runEffectFn4)
-import Foreign (Foreign, unsafeToForeign)
-import Node.Express.Passport.Types (Passport, StrategyId)
-import Node.Express.Types (Request, Response)
 import Prelude
-import Node.Express.Passport.Utils (magicPass)
 
 import Data.Argonaut.Core (Json)
 import Data.Either (Either(..))
+import Data.Function.Uncurried (Fn4, runFn4)
 import Data.Maybe (Maybe(..))
 import Data.Nullable (Nullable)
 import Data.Nullable as Nullable
+import Effect (Effect)
+import Effect.Aff (Aff, runAff_)
 import Effect.Class (liftEffect)
 import Effect.Exception (Error)
+import Effect.Uncurried (EffectFn1, EffectFn2, EffectFn3, EffectFn4, mkEffectFn1, mkEffectFn3, mkEffectFn4, runEffectFn1, runEffectFn2, runEffectFn3, runEffectFn4)
+import Foreign (Foreign, unsafeToForeign)
 import Node.Express.Handler (HandlerM(..), Handler, runHandlerM)
+import Node.Express.Passport.Types (Passport, StrategyId)
+import Node.Express.Passport.Utils (magicPass)
+import Node.Express.Types (Request, Response)
 import Unsafe.Coerce (unsafeCoerce)
 
 foreign import _getUser :: forall user . EffectFn1 Request (Nullable user)
 
-unsafeGetUser :: forall user . HandlerM (Maybe user)
-unsafeGetUser =
-  HandlerM \req _ _ -> liftEffect $ runEffectFn1 _getUser req <#> Nullable.toMaybe
+unsafeGetUser :: forall user . Request -> Effect (Maybe user)
+unsafeGetUser req = runEffectFn1 _getUser req <#> Nullable.toMaybe
 
 ------------------------------------------------------------------------------------------------------------------------
 
