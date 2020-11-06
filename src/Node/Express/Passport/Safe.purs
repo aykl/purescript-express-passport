@@ -1,12 +1,14 @@
 module Node.Express.Passport.Safe where
 
-import Node.Express.Passport.Unsafe (AddDeserializeUser__Callback, AddSerializeUser__Callback, AuthenticateOptions, Authenticate__CustomCallback, LogIn__CustomCallback, LoginOptions, unsafeAddDeserializeUser, unsafeAddSerializeUser, unsafeAuthenticate, unsafeGetUser, unsafeLogIn)
-import Effect (Effect)
-import Node.Express.Passport.Types (Passport, StrategyId)
 import Prelude
-import Node.Express.Types (Request)
+
 import Data.Maybe (Maybe)
+import Effect (Effect)
+import Effect.Exception (Error)
 import Node.Express.Handler (Handler)
+import Node.Express.Passport.Types (Passport, StrategyId)
+import Node.Express.Passport.Unsafe (AddDeserializeUser__Callback, AddSerializeUser__Callback, AuthenticateOptions, Authenticate__CustomCallback, LoginOptions, unsafeAddDeserializeUser, unsafeAddSerializeUser, unsafeAuthenticate, unsafeGetUser, unsafeLogIn)
+import Node.Express.Types (Request)
 
 getUser :: forall proxy user. proxy user -> Request -> Effect (Maybe user)
 getUser _ = unsafeGetUser
@@ -16,8 +18,9 @@ logIn ::
   proxy user ->
   user ->
   LoginOptions ->
-  Maybe LogIn__CustomCallback ->
-  Handler
+  Maybe (Maybe Error -> Effect Unit) ->
+  Request ->
+  Effect Unit
 logIn _ = unsafeLogIn
 
 authenticate ::

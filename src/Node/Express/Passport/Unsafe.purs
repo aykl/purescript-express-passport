@@ -43,29 +43,26 @@ type LoginOptions
 defaultLoginOptions :: LoginOptions
 defaultLoginOptions = { session: true }
 
-type LogIn__CustomCallback
-  = Maybe Error -> Handler
-
 unsafeLogIn ::
   forall user.
   user ->
   LoginOptions ->
-  Maybe LogIn__CustomCallback ->
-  Handler
-unsafeLogIn user options onLogin =
-  HandlerM \req res nxt ->
-    liftEffect
-      $ runEffectFn4
-          _logIn
-          req
-          user
-          options
-          ( case onLogin of
-              Just onLogin' -> Nullable.notNull $ mkEffectFn1 \error -> runHandlerM (onLogin' (Nullable.toMaybe error)) req res nxt
-              Nothing -> Nullable.null
-          )
+  Maybe (Maybe Error -> Effect Unit) ->
+  Request ->
+  Effect Unit
+unsafeLogIn user options onLogin req =
+  runEffectFn4
+    _logIn
+    req
+    user
+    options
+    ( case onLogin of
+            Just onLogin' -> Nullable.notNull $ mkEffectFn1 \error -> onLogin' (Nullable.toMaybe error)
+            Nothing -> Nullable.null
+    )
 
 ------------------------------------------------------------------------------------------------------------------------
+
 type Authenticate__Implementation__Callback user info
   = EffectFn4 (Nullable Error) (Nullable user) (Nullable info) (Nullable Number) Unit
 
