@@ -14,6 +14,6 @@ exports._isAuthenticated = function(req) {
   return req.isAuthenticated()
 }
 
-exports._logOut = function(req) {
-  req.logOut()
+exports._logout = function(req) {
+  req.logout()
 }

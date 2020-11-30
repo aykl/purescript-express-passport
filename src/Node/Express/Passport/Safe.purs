@@ -4,6 +4,7 @@ import Prelude
 
 import Data.Maybe (Maybe)
 import Effect (Effect)
+import Effect.Aff (Aff)
 import Effect.Exception (Error)
 import Node.Express.Handler (Handler)
 import Node.Express.Passport.Types (Passport, StrategyId)
@@ -13,15 +14,14 @@ import Node.Express.Types (Request)
 getUser :: forall proxy user. proxy user -> Request -> Effect (Maybe user)
 getUser _ = unsafeGetUser
 
-logIn ::
+login ::
   forall proxy user.
   proxy user ->
   user ->
   LoginOptions ->
-  Maybe (Maybe Error -> Effect Unit) ->
   Request ->
-  Effect Unit
-logIn _ = unsafeLogIn
+  Aff (Maybe Error)
+login _ = unsafeLogIn
 
 authenticate ::
   forall proxy user info.

@@ -50,7 +50,7 @@ isAuthenticated :: HandlerM Boolean
 isAuthenticated = HandlerM \req _ _ -> liftEffect $ runEffectFn1 _isAuthenticated req
 
 ------------------------------------------------------------------------------------------------------------------------
-foreign import _logOut :: EffectFn1 Request Unit
+foreign import _logout :: EffectFn1 Request Unit
 
-logOut :: HandlerM Unit
-logOut = HandlerM \req _ _ -> liftEffect $ runEffectFn1 _logOut req
+logout :: HandlerM Unit
+logout = HandlerM \req _ _ -> liftEffect $ runEffectFn1 _logout req

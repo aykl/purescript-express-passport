@@ -27,8 +27,8 @@ exports._authenticate = function(passport, strategy, options, callback) {
     )
 }
 
-exports._logIn = function(req, user, options, done) {
-  req.logIn(user, options, done)
+exports._login = function(req, user, options, done) {
+  req.login(user, options, done)
 }
 
 exports._getUser = function(req) {

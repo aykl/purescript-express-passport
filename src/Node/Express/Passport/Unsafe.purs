@@ -1,6 +1,7 @@
 module Node.Express.Passport.Unsafe where
 
 import Prelude
+
 import Data.Argonaut.Core (Json)
 import Data.Either (Either(..))
 import Data.Function.Uncurried (Fn4, runFn4)
@@ -8,7 +9,7 @@ import Data.Maybe (Maybe(..))
 import Data.Nullable (Nullable)
 import Data.Nullable as Nullable
 import Effect (Effect)
-import Effect.Aff (Aff, runAff_)
+import Effect.Aff (Aff, makeAff, nonCanceler, runAff_)
 import Effect.Class (liftEffect)
 import Effect.Exception (Error)
 import Effect.Uncurried (EffectFn1, EffectFn2, EffectFn3, EffectFn4, mkEffectFn1, mkEffectFn3, mkEffectFn4, runEffectFn1, runEffectFn2, runEffectFn3, runEffectFn4)
@@ -25,21 +26,22 @@ unsafeGetUser :: forall user. Request -> Effect (Maybe user)
 unsafeGetUser req = runEffectFn1 _getUser req <#> Nullable.toMaybe
 
 ------------------------------------------------------------------------------------------------------------------------
-foreign import _logIn ::
+foreign import _login ::
   forall user.
   EffectFn4
     Request
     user
     LoginOptions
-    (Nullable LogIn__Implementation__CustomCallback)
+    LogIn__Implementation__Callback
     Unit
 
-type LogIn__Implementation__CustomCallback
+type LogIn__Implementation__Callback
   = EffectFn1 (Nullable Error) Unit
 
 type LoginOptions
   = { session :: Boolean }
 
+-- https://github.com/jaredhanson/passport/blob/2327a36e7c005ccc7134ad157b2f258b57aa0912/lib/http/request.js#L13-L14
 defaultLoginOptions :: LoginOptions
 defaultLoginOptions = { session: true }
 
@@ -47,19 +49,20 @@ unsafeLogIn ::
   forall user.
   user ->
   LoginOptions ->
-  Maybe (Maybe Error -> Effect Unit) ->
   Request ->
-  Effect Unit
-unsafeLogIn user options onLogin req =
+  Aff (Maybe Error)
+unsafeLogIn user options req = makeAff \affCallback -> do
   runEffectFn4
-    _logIn
+    _login
     req
     user
     options
-    ( case onLogin of
-            Just onLogin' -> Nullable.notNull $ mkEffectFn1 \error -> onLogin' (Nullable.toMaybe error)
-            Nothing -> Nullable.null
+    (mkEffectFn1 \nullableError ->
+      case Nullable.toMaybe nullableError of
+           Just error -> affCallback $ Right $ Just error
+           Nothing -> affCallback $ Right $ Nothing
     )
+  pure nonCanceler
 
 ------------------------------------------------------------------------------------------------------------------------
 
